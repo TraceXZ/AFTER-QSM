@@ -1,0 +1,3 @@
+# Ignore all .idea files:
+*.idea
+
