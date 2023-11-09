@@ -26,7 +26,7 @@ To avoid the problem of "out of ROI" due to affine transformation, the padding s
 - For training, two of the most important arguments are listed:
 
 
-      python train.py -use_dense False -padding 16
+        python train.py -use_dense False -padding 16
 
     - use_dense: Boolean value determining dense architecture or Squeeze And Excitation. For the memory efficiency, the dense conncetion can be replaced by Squeeze-and-Excitation at the minimum cost of deblurring peformance.
     - padding: surrounding zero padding in case of rotating over the matix boundary.
@@ -38,7 +38,7 @@ Please implement PleaseImplementYourDataset by overriding the function path_comp
 - For testing, a code example given, with data and the reconstructing result in the folders:
 
     
-    python test.py -data_path test_data/hemorrage_anistropic.nii -vox [0.6, 0.6, 2] -z_prjs [0.005. 0.225, 0.974] -segment_num 8
+        python test.py -data_path test_data/hemorrage_anistropic.nii -vox [0.6, 0.6, 2] -z_prjs [0.005. 0.225, 0.974] -segment_num 8
 
     - data_path: path to the testing data. 
     - vox: voxel size of the testing data.
