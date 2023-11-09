@@ -54,5 +54,5 @@ Please implement PleaseImplementYourDataset by overriding the function path_comp
 
     - data_type: direct recon if field, forward calculation otherwise.
 
-    * segment_num determines the number of z-dim splitted segments of the whole 3D volume to be processed during refinement. To avoid the boundary effect, reflect padding is chosen for CNN padding.
+    *segment_num determines the number of z-dim splitted segments of the whole 3D volume to be processed during refinement. To avoid the boundary effect, reflect padding is chosen for CNN padding.*
 
