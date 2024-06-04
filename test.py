@@ -12,29 +12,6 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-data_path', type=str, default="test_data/hemorrage_anistropic.nii")
-parser.add_argument('-vox', type=float, nargs=3, default=[0.6, 0.6, 2])
-parser.add_argument('-z_prjs', type=float, nargs=3, default=[0, 0, 1])
-parser.add_argument('-padding', type=int, nargs=3, default=[64, 64, 64], help='padding for rotation.'
-                                                                 'This should be enough anisotropic resolution'
-                                                              'up to [0.6, 0.6, 2], consider to increase it otherwise')
-
-parser.add_argument('-use_GPU', type=bool, default=True)
-parser.add_argument('-GPU_NO', type=str, default='0')
-
-parser.add_argument('-save_path', type=str, default='output')
-parser.add_argument('-checkpoint_path', type=str, default='checkpoints/AFTER-QSM.pkl')
-
-parser.add_argument('-segment_num', type=int, default=3, help='a compromise for memory occupation.'
-                                                              'Consider matrix size 256x256x128 in 1mm3 isotropic,'
-                                                              'for more than 8GB but less than 12GB, 8 is preferable'
-                                                              'for less than 24GB, 4 is preferable'
-                    )
-
-parser.add_argument('-data_type', choices=['field', 'qsm'], help='direct recon if field, forward calculation otherwise.')
-
 
 def main():
 
@@ -52,6 +29,7 @@ def main():
     device = torch.device('cuda:' + gpu_no) if use_gpu else torch.device('cpu')
 
     data = torch.from_numpy(nib.load(data_path).get_fdata()[np.newaxis, np.newaxis]).to(device, torch.float)
+    # data = F.interpolate(data, scale_factor=[1, 1, 1/3])
     # data = data.flip(dims=[-2])
     mask = torch.zeros_like(data)
     mask[data != 0] = 1
@@ -83,6 +61,7 @@ def main():
     data = F.pad(data, padding.tolist())
 
     save_path = args.save_path
+    save_name = args.save_name
 
     state_dict = torch.load(args.checkpoint_path, map_location=device)
 
@@ -107,8 +86,8 @@ def main():
 
         deblur_pred = step2(qsm_refine_model, blur_pred, mask, segment_num=segment_num)
 
-    nib.save(nib.Nifti1Image(blur_pred.cpu().squeeze().numpy(), np.diag([*vox, 1])), str(save_path) + '/blur_pred')
-    nib.save(nib.Nifti1Image(deblur_pred.cpu().squeeze().numpy(), np.diag([*vox, 1])), str(save_path) + '/deblur_pred')
+    nib.save(nib.Nifti1Image(blur_pred.cpu().squeeze().numpy(), np.diag([*vox, 1])), str(save_path) + '/blur_' + save_name)
+    nib.save(nib.Nifti1Image(deblur_pred.cpu().squeeze().numpy(), np.diag([*vox, 1])), str(save_path) + '/deblur_' + save_name)
 
 
 def step1(qsm_recon_model, data, vox, z_prjs):
@@ -158,4 +137,31 @@ def step2(qsm_refine_model, blurry_qsm, mask, segment_num):
 
 
 if __name__ == '__main__':
+
+    phi = "C:\\Users\\trace\Documents\WeChat Files\s673242975\FileStorage\File\\2024-06\lfs_resharp_tik_0.0001_num_200.nii"
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-data_path', type=str, default=phi)
+    parser.add_argument('-vox', type=float, nargs=3, default=[1, 1, 1])
+    parser.add_argument('-z_prjs', type=float, nargs=3, default=[0 ,0, 1])
+    parser.add_argument('-padding', type=int, nargs=3, default=[32, 32, 32], help='padding for rotation.'
+                                                                                  'This should be enough anisotropic resolution'
+                                                                                  'up to [0.6, 0.6, 2], consider to increase it otherwise')
+
+    parser.add_argument('-use_GPU', type=bool, default=True)
+    parser.add_argument('-GPU_NO', type=str, default='0')
+
+    parser.add_argument('-save_path', type=str, default='output')
+    parser.add_argument('-save_name', type=str, default='AFTER-QSM.nii.gz')
+    parser.add_argument('-checkpoint_path', type=str, default='checkpoints/AFTER-QSM.pkl')
+
+    parser.add_argument('-segment_num', type=int, default=3, help='a compromise for memory occupation.'
+                                                                  'Consider matrix size 256x256x128 in 1mm3 isotropic,'
+                                                                  'for more than 8GB but less than 12GB, 8 is preferable'
+                                                                  'for less than 24GB, 4 is preferable'
+                        )
+
+    parser.add_argument('-data_type', choices=['field', 'qsm'],
+                        help='direct recon if field, forward calculation otherwise.')
+
     main()
